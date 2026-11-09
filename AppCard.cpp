@@ -45,6 +45,41 @@ protected:
 private:
     void fitTwoLines() { setFixedHeight(fontMetrics().lineSpacing() * 2); }
 };
+
+// The app's name on one line, shortened with an ellipsis when the card is narrow; the card's
+// tooltip has the full title. One line keeps every card as tall as the others.
+class NameLabel : public QLabel
+{
+public:
+    NameLabel(const QString& name, QWidget* parent)
+        : QLabel(name, parent)
+        , m_name(name)
+    {
+        setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+        setMinimumWidth(0);
+    }
+
+    QSize sizeHint() const override { return {fontMetrics().horizontalAdvance(m_name), QLabel::sizeHint().height()}; }
+
+protected:
+    void resizeEvent(QResizeEvent* event) override
+    {
+        QLabel::resizeEvent(event);
+        elide();
+    }
+    void changeEvent(QEvent* event) override
+    {
+        QLabel::changeEvent(event);
+        if (event->type() == QEvent::FontChange) {
+            elide();
+        }
+    }
+
+private:
+    void elide() { setText(fontMetrics().elidedText(m_name, Qt::ElideRight, width())); }
+
+    QString m_name;
+};
 } // namespace
 
 AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
@@ -67,9 +102,8 @@ AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
     m_icon->setAlignment(Qt::AlignCenter);
     updateIcon();
 
-    auto* name = new QLabel(app.name, this);
+    auto* name = new NameLabel(app.name, this);
     name->setObjectName(u"ktechpitAppName"_s); // object names for the host's style sheet
-    name->setWordWrap(true); // a long name takes two lines rather than widening the card
     QFont bold = name->font();
     bold.setBold(true);
     name->setFont(bold);
