@@ -64,6 +64,7 @@ ktechpit::CatalogConfig config;
 config.hostAppId = u"whatsie"_s;            // the app's slug on ktechpit.com
 config.package = ktechpit::Package::Flatpak; // how this copy was installed
 config.source = u"whatsie"_s;               // ?ref=whatsie-<place>
+config.oneLineText = true;                 // optional: one line per name and description, with "…"
 ktechpit::AppCatalog::init(config);
 ktechpit::AppCatalog::instance()->setEnabled(settings.showOtherApps()); // the user's choice
 
