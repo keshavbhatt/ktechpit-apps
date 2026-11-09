@@ -19,47 +19,21 @@ namespace ktechpit {
 namespace {
 constexpr int kIconSize = 40;
 
-// The one-line description, always two lines tall in the font it ends up with (a host's style
-// sheet may change it after the card is built), so cards side by side or in a grid line up and a
-// third line never shows in part.
-class SummaryLabel : public QLabel
+// One line of text, shortened with an ellipsis when the card is narrow (the card's tooltip has
+// it whole). Nothing in a card wraps, so every card is one fixed height in any font and a
+// layout never has to measure it again.
+class OneLineLabel : public QLabel
 {
 public:
-    SummaryLabel(const QString& text, QWidget* parent)
+    OneLineLabel(const QString& text, QWidget* parent)
         : QLabel(text, parent)
-    {
-        setWordWrap(true);
-        setAlignment(Qt::AlignTop | Qt::AlignLeft);
-        fitTwoLines();
-    }
-
-protected:
-    void changeEvent(QEvent* event) override
-    {
-        if (event->type() == QEvent::FontChange) {
-            fitTwoLines();
-        }
-        QLabel::changeEvent(event);
-    }
-
-private:
-    void fitTwoLines() { setFixedHeight(fontMetrics().lineSpacing() * 2); }
-};
-
-// The app's name on one line, shortened with an ellipsis when the card is narrow; the card's
-// tooltip has the full title. One line keeps every card as tall as the others.
-class NameLabel : public QLabel
-{
-public:
-    NameLabel(const QString& name, QWidget* parent)
-        : QLabel(name, parent)
-        , m_name(name)
+        , m_full(text)
     {
         setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
         setMinimumWidth(0);
     }
 
-    QSize sizeHint() const override { return {fontMetrics().horizontalAdvance(m_name), QLabel::sizeHint().height()}; }
+    QSize sizeHint() const override { return {fontMetrics().horizontalAdvance(m_full), QLabel::sizeHint().height()}; }
 
 protected:
     void resizeEvent(QResizeEvent* event) override
@@ -76,9 +50,9 @@ protected:
     }
 
 private:
-    void elide() { setText(fontMetrics().elidedText(m_name, Qt::ElideRight, width())); }
+    void elide() { setText(fontMetrics().elidedText(m_full, Qt::ElideRight, width())); }
 
-    QString m_name;
+    QString m_full;
 };
 } // namespace
 
@@ -90,7 +64,7 @@ AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
     setObjectName(u"ktechpitAppCard"_s);
     setFrameShape(QFrame::StyledPanel);
     setCursor(Qt::PointingHandCursor);
-    setToolTip(tr("%1\nClick for details").arg(app.title));
+    setToolTip(tr("%1\n%2\nClick for details").arg(app.title, app.summary));
     setAttribute(Qt::WA_Hover);
     // Tab reaches the card, and Enter or Space opens its page, as a click does.
     setFocusPolicy(Qt::TabFocus);
@@ -102,14 +76,13 @@ AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
     m_icon->setAlignment(Qt::AlignCenter);
     updateIcon();
 
-    auto* name = new NameLabel(app.name, this);
+    auto* name = new OneLineLabel(app.name, this);
     name->setObjectName(u"ktechpitAppName"_s); // object names for the host's style sheet
     QFont bold = name->font();
     bold.setBold(true);
     name->setFont(bold);
 
-    // Two lines at most: the full text is on the product page.
-    auto* summary = new SummaryLabel(app.summary, this);
+    auto* summary = new OneLineLabel(app.summary, this);
     summary->setObjectName(u"ktechpitAppSummary"_s);
     summary->setForegroundRole(QPalette::PlaceholderText);
 
