@@ -26,7 +26,7 @@ AppStrip::AppStrip(const QString& place, int count, Orientation orientation, QWi
     bold.setBold(true);
     m_title->setFont(bold);
 
-    auto* seeAll = new QLabel(u"<a href=\"all\">%1</a>"_s.arg(tr("See all")), this);
+    auto* seeAll = new QLabel(u"<a href=\"all\" style=\"text-decoration:none\">%1</a>"_s.arg(tr("See all")), this);
     seeAll->setObjectName(u"ktechpitAppStripSeeAll"_s);
     seeAll->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
     connect(seeAll, &QLabel::linkActivated, this, [this] {

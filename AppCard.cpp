@@ -4,6 +4,7 @@
 
 #include "AppLinks.h"
 
+#include <QEvent>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
@@ -17,7 +18,34 @@ namespace ktechpit {
 
 namespace {
 constexpr int kIconSize = 40;
-}
+
+// The one-line description, always two lines tall in the font it ends up with (a host's style
+// sheet may change it after the card is built), so cards side by side or in a grid line up and a
+// third line never shows in part.
+class SummaryLabel : public QLabel
+{
+public:
+    SummaryLabel(const QString& text, QWidget* parent)
+        : QLabel(text, parent)
+    {
+        setWordWrap(true);
+        setAlignment(Qt::AlignTop | Qt::AlignLeft);
+        fitTwoLines();
+    }
+
+protected:
+    void changeEvent(QEvent* event) override
+    {
+        if (event->type() == QEvent::FontChange) {
+            fitTwoLines();
+        }
+        QLabel::changeEvent(event);
+    }
+
+private:
+    void fitTwoLines() { setFixedHeight(fontMetrics().lineSpacing() * 2); }
+};
+} // namespace
 
 AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
     : QFrame(parent)
@@ -41,18 +69,15 @@ AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
 
     auto* name = new QLabel(app.name, this);
     name->setObjectName(u"ktechpitAppName"_s); // object names for the host's style sheet
+    name->setWordWrap(true); // a long name takes two lines rather than widening the card
     QFont bold = name->font();
     bold.setBold(true);
     name->setFont(bold);
 
-    auto* summary = new QLabel(app.summary, this);
-    summary->setObjectName(u"ktechpitAppSummary"_s);
-    summary->setWordWrap(true);
-    summary->setForegroundRole(QPalette::PlaceholderText);
     // Two lines at most: the full text is on the product page.
-    const int lineHeight = summary->fontMetrics().lineSpacing();
-    summary->setMaximumHeight(lineHeight * 2 + 2);
-    summary->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    auto* summary = new SummaryLabel(app.summary, this);
+    summary->setObjectName(u"ktechpitAppSummary"_s);
+    summary->setForegroundRole(QPalette::PlaceholderText);
 
     if (AppLinks::isInstalled(app)) {
         m_get = new QPushButton(tr("Installed"), this);

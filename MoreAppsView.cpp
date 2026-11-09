@@ -69,6 +69,7 @@ MoreAppsView::MoreAppsView(const QString& place, int columns, QWidget* parent)
     auto* scroll = new QScrollArea(this);
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); // the columns share the width
     scroll->setWidget(m_grid);
 
     auto* layout = new QVBoxLayout(this);
