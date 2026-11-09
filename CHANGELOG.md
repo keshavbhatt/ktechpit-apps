@@ -11,9 +11,10 @@ is a minor version, a change that needs the host app to change its code is a maj
   sits beside the search field.
 - `AppCatalog::setShowAll()`: the host's own way to open the full list from a strip's See all;
   without it See all opens a `MoreAppsDialog` as before.
-- `AppCard`: the name and the description are one line each, shortened with an ellipsis when
-  the card is narrow (the tooltip has both whole), so every card is one fixed height in any
-  font; `MoreAppsView` never scrolls sideways.
+- `CatalogConfig::oneLineText`: each card's name and description on one line, shortened with an
+  ellipsis (the tooltip has both whole), so every card is one fixed height in any font. Off by
+  default: the description takes up to two lines, now measured in the font it ends up with.
+- `MoreAppsView` never scrolls sideways.
 - `AppStrip`: See all is not underlined.
 - `AppCard`: Tab reaches a card and Enter or Space opens its page; object names
   `ktechpitAppName`, `ktechpitAppSummary` and `ktechpitAppGet`, and `ktechpitAppStripSeeAll`

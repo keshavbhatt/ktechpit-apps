@@ -52,6 +52,10 @@ struct CatalogConfig {
     int refreshDays = 7;
     /// Delay before the first network request, so it never competes with the app's start.
     int refreshDelayMs = 20000;
+    /// Each card's name and description on one line, shortened with an ellipsis (the tooltip
+    /// has them whole), so every card is one fixed height whatever the font; for a host whose
+    /// layout must not measure cards again. Off: the description takes up to two lines.
+    bool oneLineText = false;
 };
 
 /// The list of Ktechpit apps, shared by every widget of the module.

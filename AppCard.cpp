@@ -19,9 +19,34 @@ namespace ktechpit {
 namespace {
 constexpr int kIconSize = 40;
 
+// The description in up to two lines, in the font it ends up with (a host's style sheet may set
+// it after the card is built).
+class TwoLineLabel : public QLabel
+{
+public:
+    TwoLineLabel(const QString& text, QWidget* parent)
+        : QLabel(text, parent)
+    {
+        setWordWrap(true);
+        setAlignment(Qt::AlignTop | Qt::AlignLeft);
+        fitTwoLines();
+    }
+
+protected:
+    void changeEvent(QEvent* event) override
+    {
+        QLabel::changeEvent(event);
+        if (event->type() == QEvent::FontChange) {
+            fitTwoLines();
+        }
+    }
+
+private:
+    void fitTwoLines() { setMaximumHeight(fontMetrics().lineSpacing() * 2); }
+};
+
 // One line of text, shortened with an ellipsis when the card is narrow (the card's tooltip has
-// it whole). Nothing in a card wraps, so every card is one fixed height in any font and a
-// layout never has to measure it again.
+// it whole), for CatalogConfig::oneLineText.
 class OneLineLabel : public QLabel
 {
 public:
@@ -76,13 +101,15 @@ AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
     m_icon->setAlignment(Qt::AlignCenter);
     updateIcon();
 
-    auto* name = new OneLineLabel(app.name, this);
+    const bool oneLine = AppCatalog::instance()->config().oneLineText;
+    QLabel* name = oneLine ? new OneLineLabel(app.name, this) : new QLabel(app.name, this);
     name->setObjectName(u"ktechpitAppName"_s); // object names for the host's style sheet
     QFont bold = name->font();
     bold.setBold(true);
     name->setFont(bold);
 
-    auto* summary = new OneLineLabel(app.summary, this);
+    QLabel* summary = oneLine ? static_cast<QLabel*>(new OneLineLabel(app.summary, this))
+                              : new TwoLineLabel(app.summary, this);
     summary->setObjectName(u"ktechpitAppSummary"_s);
     summary->setForegroundRole(QPalette::PlaceholderText);
 
