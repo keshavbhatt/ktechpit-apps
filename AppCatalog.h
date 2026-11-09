@@ -9,8 +9,11 @@
 #include <QStringList>
 #include <QUrl>
 
+#include <functional>
+
 class QNetworkAccessManager;
 class QRandomGenerator;
+class QWidget;
 
 namespace ktechpit {
 
@@ -78,6 +81,13 @@ public:
     [[nodiscard]] bool isEnabled() const { return m_enabled; }
     void setEnabled(bool enabled);
 
+    /// Opens the full list for a strip's See all: `place` is the strip's, `from` its window.
+    using ShowAll = std::function<void(const QString& place, QWidget* from)>;
+    /// The host's own way to show the full list (a MoreAppsView in one of its windows); when
+    /// unset, See all opens a MoreAppsDialog.
+    void setShowAll(ShowAll showAll) { m_showAll = std::move(showAll); }
+    [[nodiscard]] const ShowAll& showAll() const { return m_showAll; }
+
     /// The app's icon at `size` px: bundled, cached or downloaded; a lettered tile meanwhile.
     [[nodiscard]] QPixmap icon(const AppInfo& app, int size) const;
 
@@ -114,6 +124,7 @@ private:
     bool m_refreshing = false;
     QNetworkAccessManager* m_network = nullptr;
     mutable QSet<QString> m_iconRequests;
+    ShowAll m_showAll;
 };
 
 } // namespace ktechpit

@@ -27,8 +27,13 @@ AppStrip::AppStrip(const QString& place, int count, Orientation orientation, QWi
     m_title->setFont(bold);
 
     auto* seeAll = new QLabel(u"<a href=\"all\">%1</a>"_s.arg(tr("See all")), this);
+    seeAll->setObjectName(u"ktechpitAppStripSeeAll"_s);
     seeAll->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
     connect(seeAll, &QLabel::linkActivated, this, [this] {
+        if (const AppCatalog::ShowAll& showAll = AppCatalog::instance()->showAll()) {
+            showAll(m_place, window());
+            return;
+        }
         MoreAppsDialog dialog(m_place, window());
         dialog.exec();
     });

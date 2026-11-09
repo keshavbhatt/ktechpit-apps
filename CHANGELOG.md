@@ -3,6 +3,18 @@
 Versions follow [Semantic Versioning](https://semver.org/): a new catalog field or widget option
 is a minor version, a change that needs the host app to change its code is a major version.
 
+## [1.1.0] - 2026-11-10
+
+- `MoreAppsView`: the full list as a widget, for a host that shows it in a window of its own,
+  with a column count, `setIntro()` and a `status()` / `statusChanged()` line (how many apps,
+  or what Refresh did). `MoreAppsDialog` is now this view in a plain dialog; its Refresh button
+  sits beside the search field.
+- `AppCatalog::setShowAll()`: the host's own way to open the full list from a strip's See all;
+  without it See all opens a `MoreAppsDialog` as before.
+- `AppCard`: Tab reaches a card and Enter or Space opens its page; object names
+  `ktechpitAppName`, `ktechpitAppSummary` and `ktechpitAppGet`, and `ktechpitAppStripSeeAll`
+  on the strip's link, for host style sheets.
+
 ## [1.0.1] - 2026-11-04
 
 - `AppStrip`: side-by-side cards share the width equally, so a long description no longer

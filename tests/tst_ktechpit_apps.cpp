@@ -3,9 +3,12 @@
 #include "AppCatalog.h"
 #include "AppLinks.h"
 #include "AppStrip.h"
+#include "MoreAppsView.h"
 
 #include <QFile>
 #include <QFrame>
+#include <QLabel>
+#include <QLineEdit>
 #include <QRandomGenerator>
 #include <QSet>
 #include <QTest>
@@ -175,6 +178,36 @@ private Q_SLOTS:
         const QList<QFrame*> cards = strip.findChildren<QFrame*>(u"ktechpitAppCard"_s);
         QCOMPARE(cards.size(), 2);
         QVERIFY(qAbs(cards.at(0)->width() - cards.at(1)->width()) <= 1);
+    }
+
+    void seeAllOpensTheHostsList()
+    {
+        AppCatalog::init({});
+        QString askedFor;
+        AppCatalog::instance()->setShowAll([&askedFor](const QString& place, QWidget*) { askedFor = place; });
+        ktechpit::AppStrip strip(u"about"_s, 2, ktechpit::AppStrip::Orientation::Horizontal);
+        auto* seeAll = strip.findChild<QLabel*>(u"ktechpitAppStripSeeAll"_s);
+        QVERIFY(seeAll != nullptr);
+        Q_EMIT seeAll->linkActivated(u"all"_s);
+        QCOMPARE(askedFor, u"about"_s);
+        AppCatalog::instance()->setShowAll({});
+    }
+
+    void theListFiltersAndSaysHowManyApps()
+    {
+        AppCatalog::init({});
+        ktechpit::MoreAppsView view(u"menu"_s, 3);
+        const int all = static_cast<int>(AppCatalog::instance()->allApps().size());
+        QCOMPARE(view.findChildren<QFrame*>(u"ktechpitAppCard"_s).size(), all);
+        QVERIFY(view.status().contains(QString::number(all)));
+        auto* search = view.findChild<QLineEdit*>();
+        search->setText(u"no app is called this"_s);
+        QVERIFY(view.findChildren<QFrame*>(u"ktechpitAppCard"_s).isEmpty());
+        search->clear();
+        // Every card can be reached with Tab.
+        for (QFrame* card : view.findChildren<QFrame*>(u"ktechpitAppCard"_s)) {
+            QVERIFY(card->focusPolicy() & Qt::TabFocus);
+        }
     }
 };
 

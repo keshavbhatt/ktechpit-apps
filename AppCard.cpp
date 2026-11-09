@@ -5,6 +5,7 @@
 #include "AppLinks.h"
 
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPushButton>
@@ -28,6 +29,10 @@ AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
     setCursor(Qt::PointingHandCursor);
     setToolTip(tr("%1\nClick for details").arg(app.title));
     setAttribute(Qt::WA_Hover);
+    // Tab reaches the card, and Enter or Space opens its page, as a click does.
+    setFocusPolicy(Qt::TabFocus);
+    setAccessibleName(app.name);
+    setAccessibleDescription(app.summary);
 
     m_icon = new QLabel(this);
     m_icon->setFixedSize(kIconSize, kIconSize);
@@ -35,11 +40,13 @@ AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
     updateIcon();
 
     auto* name = new QLabel(app.name, this);
+    name->setObjectName(u"ktechpitAppName"_s); // object names for the host's style sheet
     QFont bold = name->font();
     bold.setBold(true);
     name->setFont(bold);
 
     auto* summary = new QLabel(app.summary, this);
+    summary->setObjectName(u"ktechpitAppSummary"_s);
     summary->setWordWrap(true);
     summary->setForegroundRole(QPalette::PlaceholderText);
     // Two lines at most: the full text is on the product page.
@@ -57,6 +64,8 @@ AppCard::AppCard(const AppInfo& app, const QString& place, QWidget* parent)
         m_get->setToolTip(tr("Install %1").arg(app.name));
         connect(m_get, &QPushButton::clicked, this, [this] { AppLinks::openGet(m_app, m_place); });
     }
+
+    m_get->setObjectName(u"ktechpitAppGet"_s);
 
     auto* text = new QVBoxLayout;
     text->setSpacing(2);
@@ -89,6 +98,16 @@ void AppCard::mouseReleaseEvent(QMouseEvent* event)
         AppLinks::openPage(m_app, m_place);
     }
     QFrame::mouseReleaseEvent(event);
+}
+
+void AppCard::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter || event->key() == Qt::Key_Space) {
+        AppLinks::openPage(m_app, m_place);
+        event->accept();
+        return;
+    }
+    QFrame::keyPressEvent(event);
 }
 
 void AppCard::enterEvent(QEnterEvent* event)

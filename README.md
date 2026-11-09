@@ -74,8 +74,20 @@ layout->addWidget(new ktechpit::AppStrip(u"about"_s, 3));
 ktechpit::MoreAppsDialog(u"menu"_s, this).exec();
 ```
 
+To show the full list in a window of the app's own (a sheet, a page) instead of the plain
+dialog, put a `MoreAppsView` in it and send See all there:
+
+```cpp
+ktechpit::AppCatalog::instance()->setShowAll([](const QString& place, QWidget* from) {
+    MyMoreAppsWindow(place, from).exec(); // holds a ktechpit::MoreAppsView(place, 3)
+});
+```
+
 The widgets draw with the host's palette and fonts. Object names for style sheets:
-`ktechpitAppCard`, `ktechpitAppStrip`, `ktechpitAppStripTitle` (its heading), `ktechpitMoreAppsDialog`.
+`ktechpitAppCard`, `ktechpitAppName`, `ktechpitAppSummary`, `ktechpitAppGet`,
+`ktechpitAppStrip`, `ktechpitAppStripTitle` (its heading), `ktechpitAppStripSeeAll`,
+`ktechpitMoreAppsView`, `ktechpitMoreAppsIntro`, `ktechpitMoreAppsRefresh`,
+`ktechpitMoreAppsDialog`.
 
 Give users a way to turn it off (a "Show other Ktechpit apps" setting that calls
 `setEnabled`); every strip then hides.
